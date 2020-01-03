@@ -23,7 +23,7 @@ import org.junit.jupiter.api.Test;
 import rest.ApplicationConfig;
 import utils.EMF_Creator;
 
-//@Disabled
+@Disabled
 public class LoginEndpointTest {
 
     private static final int SERVER_PORT = 7777;
@@ -75,14 +75,10 @@ public class LoginEndpointTest {
             user.addRole(userRole);
             User admin = new User("admin", "test");
             admin.addRole(adminRole);
-            User both = new User("user_admin", "test");
-            both.addRole(userRole);
-            both.addRole(adminRole);
             em.persist(userRole);
             em.persist(adminRole);
             em.persist(user);
             em.persist(admin);
-            em.persist(both);
             System.out.println("Saved test data to database");
             em.getTransaction().commit();
         } finally {
