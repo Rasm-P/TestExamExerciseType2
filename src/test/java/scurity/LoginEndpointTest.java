@@ -1,28 +1,39 @@
+/*
+ * To change this license header, choose License Headers in Project Properties.
+ * To change this template file, choose Tools | Templates
+ * and open the template in the editor.
+ */
 package scurity;
 
-import entities.User;
 import entities.Role;
-
+import entities.User;
 import io.restassured.RestAssured;
 import static io.restassured.RestAssured.given;
-import io.restassured.http.ContentType;
 import io.restassured.parsing.Parser;
 import java.net.URI;
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
+import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriBuilder;
 import org.glassfish.grizzly.http.server.HttpServer;
 import org.glassfish.jersey.grizzly2.httpserver.GrizzlyHttpServerFactory;
 import org.glassfish.jersey.server.ResourceConfig;
 import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.notNullValue;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.*;
+import org.junit.jupiter.api.Disabled;
 import rest.ApplicationConfig;
 import utils.EMF_Creator;
 
+/**
+ *
+ * @author Rasmus2
+ */
 @Disabled
 public class LoginEndpointTest {
 
@@ -42,7 +53,7 @@ public class LoginEndpointTest {
     public static void setUpClass() {
         //This method must be called before you request the EntityManagerFactory
         EMF_Creator.startREST_TestWithDB();
-        emf = EMF_Creator.createEntityManagerFactory(EMF_Creator.DbSelector.TEST, EMF_Creator.Strategy.CREATE);
+        emf = EMF_Creator.createEntityManagerFactory(EMF_Creator.DbSelector.TEST, EMF_Creator.Strategy.DROP_AND_CREATE);
 
         httpServer = startServer();
         //Setup RestAssured
@@ -79,144 +90,86 @@ public class LoginEndpointTest {
             em.persist(adminRole);
             em.persist(user);
             em.persist(admin);
-            System.out.println("Saved test data to database");
             em.getTransaction().commit();
         } finally {
             em.close();
         }
     }
-    
+
     //This is how we hold on to the token after login, similar to that a client must store the token somewhere
-  private static String securityToken;
+    private static String securityToken;
 
-  //Utility method to login and set the returned securityToken
-  private static void login(String role, String password) {
-    String json = String.format("{username: \"%s\", password: \"%s\"}", role, password);
-    securityToken = given()
-            .contentType("application/json")
-            .body(json)
-            //.when().post("/api/login")
-            .when().post("/login")
-            .then()
-            .extract().path("token");
-      System.out.println("TOKEN ---> "+securityToken);
-  }
+    //Utility method to login and set the returned securityToken
+    private static void login(String role, String password) {
+        String json = String.format("{username: \"%s\", password: \"%s\"}", role, password);
+        securityToken = given()
+                .contentType("application/json")
+                .body(json)
+                //.when().post("/api/login")
+                .when().post("/login")
+                .then()
+                .extract().path("token");
+        System.out.println("TOKEN ---> " + securityToken);
+    }
 
-  private void logOut() {
-    securityToken = null;
-  }
+    @Test
+    public void testLoginAdmin() throws Exception {
+        given()
+                .contentType("application/json")
+                .body("{\"username\":\"admin\", \"password\":\"test\"}")
+                .when()
+                .post("/login")
+                .then()
+                .statusCode(200)
+                .body("username", equalTo("admin"));
+    }
 
-  @Test
-  public void serverIsRunning() {
-    System.out.println("Testing is server UP");
-    given().when().get("/info").then().statusCode(200);
-  }
+    @Test
+    public void testLoginUser() throws Exception {
+        given()
+                .contentType("application/json")
+                .body("{\"username\":\"user\", \"password\":\"test\"}")
+                .when()
+                .post("/login")
+                .then()
+                .statusCode(200)
+                .body("username", equalTo("user"));
+    }
 
-  @Test
-  public void testRestNoAuthenticationRequired() {
-    given()
-            .contentType("application/json")
-            .when()
-            .get("/info").then()
-            .statusCode(200)
-            .body("msg", equalTo("Hello anonymous"));
-  }
+    @Test
+    public void testNoLogin1() throws Exception {
+        given()
+                .contentType("application/json")
+                .body("{\"username\":\"user123\", \"password\":\"te123123st\"}")
+                .when()
+                .post("/login")
+                .then()
+                .statusCode(403)
+                .body("message", equalTo("Invalid user name or password"));
+    }
 
-  @Test
-  public void testRestForAdmin() {
-    login("admin", "test");
-    given()
-            .contentType("application/json")
-            .accept(ContentType.JSON)
-            .header("x-access-token", securityToken)
-            .when()
-            .get("/info/admin").then()
-            .statusCode(200)
-            .body("msg", equalTo("Hello to (admin) User: admin"));
-  }
+    @Test
+    public void testNoLogin2() throws Exception {
+        given()
+                .contentType("application/json")
+                .body("{\"username\":\"user\", \"password\":\"te123123st\"}")
+                .when()
+                .post("/login")
+                .then()
+                .statusCode(403)
+                .body("message", equalTo("Invalid user name or password"));
+    }
 
-  @Test
-  public void testRestForUser() {
-    login("user", "test");
-    given()
-            .contentType("application/json")
-            .header("x-access-token", securityToken)
-            .when()
-            .get("/info/user").then()
-            .statusCode(200)
-            .body("msg", equalTo("Hello to User: user"));
-  }
-  
-  @Test
-  public void testAutorizedUserCannotAccesAdminPage() {
-    login("user", "test");
-    given()
-            .contentType("application/json")
-            .header("x-access-token", securityToken)
-            .when()
-            .get("/info/admin").then()  //Call Admin endpoint as user
-            .statusCode(401);
-  }
-  
-  @Test
-  public void testAutorizedAdminCannotAccesUserPage() {
-    login("admin", "test");
-    given()
-            .contentType("application/json")
-            .header("x-access-token", securityToken)
-            .when()
-            .get("/info/user").then()  //Call User endpoint as Admin
-            .statusCode(401);
-  }
-  
-  @Test
-  public void testRestForMultiRole1() {
-    login("user_admin", "test");
-    given()
-            .contentType("application/json")
-            .accept(ContentType.JSON)
-            .header("x-access-token", securityToken)
-            .when()
-            .get("/info/admin").then()
-            .statusCode(200)
-            .body("msg", equalTo("Hello to (admin) User: user_admin"));
-  }
+    @Test
+    public void testNoLogin3() throws Exception {
+        given()
+                .contentType("application/json")
+                .body("{\"username\":\"user123\", \"password\":\"test\"}")
+                .when()
+                .post("/login")
+                .then()
+                .statusCode(403)
+                .body("message", equalTo("Invalid user name or password"));
+    }
 
-  @Test
-  public void testRestForMultiRole2() {
-    login("user_admin", "test");
-    given()
-            .contentType("application/json")
-            .header("x-access-token", securityToken)
-            .when()
-            .get("/info/user").then()
-            .statusCode(200)
-            .body("msg", equalTo("Hello to User: user_admin"));
-  }
-
-  @Test
-  public void userNotAuthenticated() {
-    logOut();
-    given()
-            .contentType("application/json")
-            .when()
-            .get("/info/user").then()
-            .statusCode(403)
-            .body("code", equalTo(403))
-            .body("message", equalTo("Not authenticated - do login"));
-  }
-
-  @Test
-  public void adminNotAuthenticated() {
-    logOut();
-    given()
-            .contentType("application/json")
-            .when()
-            .get("/info/user").then()
-            .statusCode(403)
-            .body("code", equalTo(403))
-            .body("message", equalTo("Not authenticated - do login"));
-  }
-    
-    
 }
