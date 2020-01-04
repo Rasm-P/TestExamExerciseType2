@@ -2,9 +2,10 @@ package rest;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-import dto.ResponceDto;
+import dto.ResponceDTO;
 import entities.User;
 import errorhandling.CategoryException;
+import facades.CategoryFacade;
 import facades.JokeFacade;
 import java.util.List;
 import javax.annotation.security.RolesAllowed;
@@ -24,9 +25,10 @@ import utils.EMF_Creator;
 import java.util.concurrent.ExecutionException;
 
 @Path("jokeByCategory")
-public class JokeByCategory {
-
-    private static final Gson g = new GsonBuilder().setPrettyPrinting().create();
+public class JokeByCategoryResource {
+    
+    private static final EntityManagerFactory EMF = EMF_Creator.createEntityManagerFactory(EMF_Creator.DbSelector.DEV, EMF_Creator.Strategy.CREATE);
+    public static final JokeFacade j = JokeFacade.getFacade(EMF);
 
     @Context
     SecurityContext securityContext;
@@ -34,18 +36,17 @@ public class JokeByCategory {
     @GET
     @Produces(MediaType.APPLICATION_JSON)
     public String getInfoForAll() {
-        return "{\"msg\":\"Hello anonymous\"}";
+        return "{\"msg\":\"Hello JokeByCategory\"}";
     }
     
     @GET
     @Path("/{categories}")
     @Produces(MediaType.APPLICATION_JSON)
-    public ResponceDto jokeByCategory(@PathParam("categories") String jsonString) throws InterruptedException, ExecutionException, CategoryException {
+    public ResponceDTO jokeByCategory(@PathParam("categories") String jsonString) throws InterruptedException, ExecutionException, CategoryException {
         String[] categoryArray = jsonString.split(",");
         if (categoryArray.length > 4) {
             throw new CategoryException("For this request, a maximum of 4 categories is allowed!");
         } else {
-        JokeFacade j = new JokeFacade();
         return j.jokes(categoryArray);
         }
     }

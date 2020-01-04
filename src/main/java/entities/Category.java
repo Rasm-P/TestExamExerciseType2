@@ -1,8 +1,10 @@
 package entities;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.List;
 import javax.persistence.Basic;
+import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
@@ -31,7 +33,7 @@ public class Category implements Serializable {
     private String category;
     
     @ManyToMany
-    private List<Request> requestList;
+    private List<Request> requestList  = new ArrayList();
     
     
     public Category() {
@@ -63,6 +65,10 @@ public class Category implements Serializable {
 
     public void setRequestList(List<Request> requestList) {
         this.requestList = requestList;
+    }
+    
+    public void addToRequestList(Request request) {
+        this.requestList.add(request);
     }
    
 }

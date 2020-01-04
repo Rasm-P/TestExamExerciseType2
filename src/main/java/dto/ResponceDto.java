@@ -5,26 +5,27 @@
  */
 package dto;
 
+import facades.Joke;
 import java.util.List;
 
 /**
  *
  * @author Rasmus2
  */
-public class ResponceDto {
-    private List<String> jokes;
+public class ResponceDTO {
+    private List<Joke> jokes;
     private String reference;
 
-    public ResponceDto(List<String> jokes, String reference) {
+    public ResponceDTO(List<Joke> jokes, String reference) {
         this.jokes = jokes;
         this.reference = reference;
     }
 
-    public List<String> getJokes() {
+    public List<Joke> getJokes() {
         return jokes;
     }
 
-    public void setJokes(List<String> jokes) {
+    public void setJokes(List<Joke> jokes) {
         this.jokes = jokes;
     }
 

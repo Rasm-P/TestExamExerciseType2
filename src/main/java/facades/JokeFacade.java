@@ -17,14 +17,16 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
 import javax.persistence.EntityManagerFactory;
-import utils.EMF_Creator;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
-import dto.ResponceDto;
-import net.minidev.json.JSONObject;
+import dto.ResponceDTO;
+import entities.Category;
+import entities.Request;
+import errorhandling.CategoryException;
+import javax.persistence.NoResultException;
 
 /**
  *
@@ -32,50 +34,67 @@ import net.minidev.json.JSONObject;
  */
 public class JokeFacade {
 
+    private static EntityManagerFactory emf;
     private static JokeFacade instance;
-    private static String siteUrl = "https://api.chucknorris.io/jokes/random?category=";
+    private static final String siteUrl = "https://api.chucknorris.io/jokes/random?category=";
     Gson g = new Gson();
-    EntityManagerFactory emf = EMF_Creator.createEntityManagerFactory(EMF_Creator.DbSelector.DEV, EMF_Creator.Strategy.CREATE);
 
     //Private Constructor to ensure Singleton
-//    private JokeFacade() {
-//    }
-    public static JokeFacade getFacade() {
+    private JokeFacade() {
+    }
+
+    public static JokeFacade getFacade(EntityManagerFactory _emf) {
         if (instance == null) {
+            emf = _emf;
             instance = new JokeFacade();
         }
         return instance;
     }
 
-    public ResponceDto jokes(String[] categoryArray) throws InterruptedException, ExecutionException {
-        final List<String> jokes = new ArrayList();
+    public ResponceDTO jokes(String[] categoryArray) throws InterruptedException, ExecutionException, CategoryException {
+
+        final List<Joke> jokes = new ArrayList();
         ExecutorService executor = Executors.newFixedThreadPool(categoryArray.length);
         List<Future<String>> list = new ArrayList();
+        CategoryFacade cateF = CategoryFacade.getFacade(emf);
+        try {
+            for (int i = 0; i < categoryArray.length; i++) {
+                final String category = categoryArray[i];
+                Category travel = cateF.findLegalCategroy(category);
+                Request r = new Request();
+                travel.addToRequestList(r);
+                cateF.addRequest(r);
+                cateF.categoryUpdate(travel);
 
-        for (int i = 0; i < categoryArray.length; i++) {
-            final String category = categoryArray[i];
+                Future<String> future = executor.submit(new Callable<String>() {
+                    @Override
+                    public String call() throws Exception {
+                        String s = returnJokeGivenCategory(category);
 
-            Future<String> future = executor.submit(new Callable<String>() {
-                @Override
-                public String call() throws Exception {
-                    String s = returnJokeGivenCategory(category);
-                    jokes.add(s);
-                    return s;
-                }
-            });
-            list.add(future);
-        }
-        for (Future fut : list) {
-            System.out.println(fut.get());
+                        JsonObject jsonObject = new JsonParser().parse(s).getAsJsonObject();
+                        Joke joke = new Joke(category, jsonObject.get("value").getAsString());
+                        jokes.add(joke);
+
+                        return s;
+                    }
+                });
+                list.add(future);
+            }
+            for (Future fut : list) {
+                System.out.println(fut.get());
+            }
+        } catch (NoResultException | CategoryException | InterruptedException | ExecutionException ex) {
+            executor.shutdown();
+            throw new CategoryException("One of the categories were not vaild!");
         }
         executor.shutdown();
 
-        ResponceDto responceDto = new ResponceDto(jokes, siteUrl);
+        ResponceDTO responceDto = new ResponceDTO(jokes, siteUrl);
         return responceDto;
     }
 
-    public String returnJokeGivenCategory(String Category) throws MalformedURLException, ProtocolException, IOException {
-        URL url = new URL(siteUrl + Category);
+    public String returnJokeGivenCategory(String category) throws MalformedURLException, ProtocolException, IOException {
+        URL url = new URL(siteUrl + category);
         HttpURLConnection con = (HttpURLConnection) url.openConnection();
         con.setRequestMethod("GET");
         con.setRequestProperty("Accept", "application/json;charset=UTF-8");
@@ -87,15 +106,7 @@ public class JokeFacade {
                 jsonStr = scan.nextLine();
             }
         }
-
-        JsonObject jsonObject = new JsonParser().parse(jsonStr).getAsJsonObject();
-        JSONObject obj = new JSONObject();
-        obj.put("category", Category);
-        obj.put("joke", jsonObject.get("value").getAsString());
-        return g.toJson(obj);
+        return jsonStr;
     }
 
-//    public static void main(String[] args) throws ProtocolException, IOException, InterruptedException, ExecutionException {
-//        System.out.println(jokes("food"));
-//    }
 }
