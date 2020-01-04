@@ -56,7 +56,7 @@ public class JokeFacade {
         final List<Joke> jokes = new ArrayList();
         ExecutorService executor = Executors.newFixedThreadPool(categoryArray.length);
         List<Future<String>> list = new ArrayList();
-        CategoryFacade cateF = CategoryFacade.getFacade(emf);
+        EntityFacade cateF = EntityFacade.getFacade(emf);
         try {
             for (int i = 0; i < categoryArray.length; i++) {
                 final String category = categoryArray[i];

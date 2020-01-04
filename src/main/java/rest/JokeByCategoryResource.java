@@ -1,22 +1,12 @@
 package rest;
 
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
 import dto.ResponceDTO;
-import entities.User;
 import errorhandling.CategoryException;
-import facades.CategoryFacade;
 import facades.JokeFacade;
-import java.util.List;
-import javax.annotation.security.RolesAllowed;
-import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
-import javax.ws.rs.Consumes;
 import javax.ws.rs.core.Context;
-import javax.ws.rs.core.UriInfo;
 import javax.ws.rs.Produces;
 import javax.ws.rs.GET;
-import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.core.MediaType;
@@ -36,7 +26,7 @@ public class JokeByCategoryResource {
     @GET
     @Produces(MediaType.APPLICATION_JSON)
     public String getInfoForAll() {
-        return "{\"msg\":\"Hello JokeByCategory\"}";
+        return "{\"msg\":\"JokeByCategory\"}";
     }
     
     @GET

@@ -34,6 +34,7 @@ public class ApplicationConfig extends Application {
         resources.add(rest.CategoryCountResource.class);
         resources.add(rest.JokeByCategoryResource.class);
         resources.add(rest.JokeByCategoryV2Resource.class);
+        resources.add(rest.NewCategoryResource.class);
         resources.add(security.JWTAuthenticationFilter.class);
         resources.add(security.LoginEndpoint.class);
         resources.add(security.RolesAllowedFilter.class);

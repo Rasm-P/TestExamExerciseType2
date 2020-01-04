@@ -17,13 +17,13 @@ import javax.persistence.TypedQuery;
  *
  * @author Rasmus2
  */
-public class CategoryFacade {
+public class EntityFacade {
 
-    private static CategoryFacade instance;
+    private static EntityFacade instance;
     private static EntityManagerFactory emf;
 
     //Private Constructor to ensure Singleton
-    private CategoryFacade() {
+    private EntityFacade() {
     }
 
     /**
@@ -31,10 +31,10 @@ public class CategoryFacade {
      * @param _emf
      * @return an instance of this facade class.
      */
-    public static CategoryFacade getFacade(EntityManagerFactory _emf) {
+    public static EntityFacade getFacade(EntityManagerFactory _emf) {
         if (instance == null) {
             emf = _emf;
-            instance = new CategoryFacade();
+            instance = new EntityFacade();
         }
         return instance;
     }
@@ -75,4 +75,30 @@ public class CategoryFacade {
             em.close();
         }
     }
+    
+    public Category addCategroy(Category category) {
+        EntityManager em = emf.createEntityManager();
+        try {
+            em.getTransaction().begin();
+            em.persist(category);
+            em.getTransaction().commit();
+            return category;
+        } finally {
+            em.close();
+        }
+    }
+    
+    public Category removeCategroy(Long id) {
+        EntityManager em = emf.createEntityManager();
+        try {
+            em.getTransaction().begin();
+            Category o = em.find(Category.class, id);
+            em.remove(em.merge(o));
+            em.getTransaction().commit();
+            return o;
+        } finally {
+            em.close();
+        }
+    }
+    
 }
