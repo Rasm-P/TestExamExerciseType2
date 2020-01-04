@@ -35,7 +35,7 @@ public class ResponceDTO {
 
     public void setReference(String reference) {
         this.reference = reference;
-    }
+    } 
     
     
     
