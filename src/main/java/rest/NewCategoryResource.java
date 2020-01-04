@@ -45,8 +45,8 @@ public class NewCategoryResource {
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes(MediaType.APPLICATION_JSON)
     @RolesAllowed("admin")
-    public Category createCityInfo(Category cityInfo) {
-        Category category = cateF.addCategroy(cityInfo);
+    public Category createCategory(Category c) {
+        Category category = cateF.addCategroy(c);
         return category;
     }
     
@@ -54,7 +54,7 @@ public class NewCategoryResource {
     @Produces(MediaType.APPLICATION_JSON)
     @Path("/{id}")
     @RolesAllowed("admin")
-    public Category deleteCityInfo(@PathParam("id") Long id) {
+    public Category deleteCategory(@PathParam("id") Long id) {
         Category category = cateF.removeCategroy(id);
         return category;
     }

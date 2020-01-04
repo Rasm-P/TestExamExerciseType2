@@ -44,9 +44,9 @@ public class CategoryCountResource {
     @Path("/{category}")
     @RolesAllowed("admin")
     @Produces(MediaType.APPLICATION_JSON)
-    public int categoryCount(@PathParam("category") String jsonString) throws InterruptedException, ExecutionException, CategoryException {
+    public String categoryCount(@PathParam("category") String jsonString) throws InterruptedException, ExecutionException, CategoryException {
         Category category = cateF.findLegalCategroy(jsonString);
-        return category.getRequestList().size();
+        return "{\"count\":"+category.getRequestList().size()+"}";
     }
 
 }
