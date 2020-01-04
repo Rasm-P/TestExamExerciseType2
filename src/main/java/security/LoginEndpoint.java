@@ -39,7 +39,7 @@ import utils.EMF_Creator;
         info = @Info(
                 title = "TestExamExerciseType2",
                 version = "0.1",
-                description = "Backend of the Sem3 Exam project"
+                description = "Backend of TestExamExerciseType2"
         ),
         tags = {
             @Tag(name = "Login endpoint", description = "API used for logging in users/admins")
@@ -69,8 +69,8 @@ public class LoginEndpoint {
   @Operation(summary = "Log in users/admin for the platform by returning a valid token that makes it possible to communicate data",
             tags = {"Login endpoint"},
             responses = {
-             //   @ApiResponse(
-             //           content = @Content(mediaType = "application/json", schema = @Schema(implementation = User.class))),
+                @ApiResponse(
+                        content = @Content(mediaType = "application/json", schema = @Schema(implementation = User.class))),
                 @ApiResponse(responseCode = "200", description = "The requested token was returned and the user is logged in and free to communicate data"),
                 @ApiResponse(responseCode = "400", description = "No token was return and no login is possible")})
   public Response login(String jsonString) throws AuthenticationException {

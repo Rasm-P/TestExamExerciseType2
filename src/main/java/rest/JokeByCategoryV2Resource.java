@@ -8,6 +8,14 @@ package rest;
 import dto.ResponceDTO;
 import errorhandling.CategoryException;
 import facades.JokeFacade;
+import io.swagger.v3.oas.annotations.OpenAPIDefinition;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.info.Info;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.servers.Server;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import java.util.concurrent.ExecutionException;
 import javax.annotation.security.RolesAllowed;
 import javax.persistence.EntityManagerFactory;
@@ -25,6 +33,27 @@ import utils.EMF_Creator;
  *
  * @author Rasmus2
  */
+@OpenAPIDefinition(
+        info = @Info(
+                title = "TestExamExerciseType2V2",
+                version = "0.1",
+                description = "Backend of TestExamExerciseType2V2"
+        ),
+        tags = {
+            @Tag(name = "Jokes By Categories V2", description = "API for logged in user and admin roels to search for a maximum of 12 categories and get 12 jokes in return")
+        },
+        servers = {
+            @Server(
+                    description = "For Local host testing",
+                    url = "http://localhost:8080/TestExamExerciseType2"
+            ),
+            @Server(
+                    description = "Server API",
+                    url = "https://barfodpraetorius.dk/TestExamExerciseType2"
+            )
+
+        }
+)
 @Path("jokeByCategoryV2")
 public class JokeByCategoryV2Resource {
     
@@ -33,17 +62,19 @@ public class JokeByCategoryV2Resource {
 
     @Context
     SecurityContext securityContext;
-
-    @GET
-    @Produces(MediaType.APPLICATION_JSON)
-    public String getInfoForAll() {
-        return "{\"msg\":\"JokeByCategoryV2\"}";
-    }
     
     @GET
     @Path("/{categories}")
     @RolesAllowed({"admin","user"})
     @Produces(MediaType.APPLICATION_JSON)
+    @Operation(summary = "Allows for logged in admin and user roles to search for a maximum of 12 categories and get 12 jokes in return",
+            tags = {"Jokes By Categories V2"},
+            responses = {
+                @ApiResponse(
+                        content = @Content(mediaType = "application/json", schema = @Schema(implementation = ResponceDTO.class))),
+                @ApiResponse(responseCode = "200", description = "A joke for each searched for category is returned"),
+                @ApiResponse(responseCode = "400", description = "User token invalid or not authorized"),
+                @ApiResponse(responseCode = "500", description = "Too many or more than 12 requested categories")})
     public ResponceDTO jokeByCategoryV2(@PathParam("categories") String jsonString) throws InterruptedException, ExecutionException, CategoryException {
         String[] categoryArray = jsonString.split(",");
         if (categoryArray.length > 12) {

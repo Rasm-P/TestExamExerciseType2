@@ -128,11 +128,6 @@ public class ResourceTest {
     }
 
     @Test
-    public void testCategoryCountIsUp() {
-        given().when().get("/categoryCount").then().statusCode(200);
-    }
-
-    @Test
     public void testCategoryCount() {
         login("admin", "test");
         given()
@@ -143,11 +138,6 @@ public class ResourceTest {
                 .get("/categoryCount/sport").then()
                 .statusCode(200)
                 .body("count", equalTo(0));
-    }
-
-    @Test
-    public void testJokeByCategoryIsUp() {
-        given().when().get("/jokeByCategory").then().statusCode(200);
     }
 
     @Test
@@ -163,11 +153,6 @@ public class ResourceTest {
     }
 
     @Test
-    public void testJokeByCategoryV2IsUp() {
-        given().when().get("/jokeByCategoryV2").then().statusCode(200);
-    }
-
-    @Test
     public void testJokeByCategoryV2NotOverTwelve() {
         login("user", "test");
         given()
@@ -178,11 +163,6 @@ public class ResourceTest {
                 .get("/jokeByCategoryV2/1,2,3,4,5,6,7,8,9,10,11,12,13").then()
                 .statusCode(500)
                 .body("message", equalTo("For this request, a maximum of 12 categories is allowed!"));
-    }
-
-    @Test
-    public void testNewCategory() {
-        given().when().get("/newCategory").then().statusCode(200);
     }
 
     @Test

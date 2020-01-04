@@ -102,80 +102,63 @@ public class LoginEndpointTest {
     }
 
     @Test
-    public void serverIsRunning() {
-        System.out.println("Testing is server UP");
-        given().when().get("/info").then().statusCode(200);
-    }
-
-    @Test
-    public void testRestForAdmin() {
-        login("admin", "test");
+    public void testLoginAdmin() throws Exception {
         given()
                 .contentType("application/json")
-                .accept(ContentType.JSON)
-                .header("x-access-token", securityToken)
+                .body("{\"username\":\"admin\", \"password\":\"test\"}")
                 .when()
-                .get("/info/admin").then()
+                .post("/login")
+                .then()
                 .statusCode(200)
-                .body("msg", equalTo("Hello to (admin) User: admin"));
+                .body("username", equalTo("admin"));
     }
 
     @Test
-    public void testRestForUser() {
-        login("user", "test");
+    public void testLoginUser() throws Exception {
         given()
                 .contentType("application/json")
-                .header("x-access-token", securityToken)
+                .body("{\"username\":\"user\", \"password\":\"test\"}")
                 .when()
-                .get("/info/user").then()
+                .post("/login")
+                .then()
                 .statusCode(200)
-                .body("msg", equalTo("Hello to User: user"));
+                .body("username", equalTo("user"));
     }
 
     @Test
-    public void testAutorizedUserCannotAccesAdminPage() {
-        login("user", "test");
+    public void testNoLogin1() throws Exception {
         given()
                 .contentType("application/json")
-                .header("x-access-token", securityToken)
+                .body("{\"username\":\"user123\", \"password\":\"te123123st\"}")
                 .when()
-                .get("/info/admin").then()
-                .statusCode(401);
-    }
-
-    @Test
-    public void testAutorizedAdminCannotAccesUserPage() {
-        login("admin", "test");
-        given()
-                .contentType("application/json")
-                .header("x-access-token", securityToken)
-                .when()
-                .get("/info/user").then()
-                .statusCode(401);
-    }
-
-    @Test
-    public void userNotAuthenticated() {
-        logOut();
-        given()
-                .contentType("application/json")
-                .when()
-                .get("/info/user").then()
+                .post("/login")
+                .then()
                 .statusCode(403)
-                .body("code", equalTo(403))
-                .body("message", equalTo("Not authenticated - do login"));
+                .body("message", equalTo("Invalid user name or password"));
     }
 
     @Test
-    public void adminNotAuthenticated() {
-        logOut();
+    public void testNoLogin2() throws Exception {
         given()
                 .contentType("application/json")
+                .body("{\"username\":\"user\", \"password\":\"te123123st\"}")
                 .when()
-                .get("/info/user").then()
+                .post("/login")
+                .then()
                 .statusCode(403)
-                .body("code", equalTo(403))
-                .body("message", equalTo("Not authenticated - do login"));
+                .body("message", equalTo("Invalid user name or password"));
+    }
+
+    @Test
+    public void testNoLogin3() throws Exception {
+        given()
+                .contentType("application/json")
+                .body("{\"username\":\"user123\", \"password\":\"test\"}")
+                .when()
+                .post("/login")
+                .then()
+                .statusCode(403)
+                .body("message", equalTo("Invalid user name or password"));
     }
 
 }
