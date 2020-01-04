@@ -54,23 +54,25 @@ public class EntityFacade {
 
     }
 
-    public void addRequest(Request request) {
+    public Request addRequest(Request request) {
         EntityManager em = emf.createEntityManager();
         try {
             em.getTransaction().begin();
             em.persist(request);
             em.getTransaction().commit();
+            return request;
         } finally {
             em.close();
         }
     }
 
-    public void categoryUpdate(Category category) {
+    public Category categoryUpdate(Category category) {
         EntityManager em = emf.createEntityManager();
         try {
             em.getTransaction().begin();
             em.merge(category);
             em.getTransaction().commit();
+            return category;
         } finally {
             em.close();
         }
