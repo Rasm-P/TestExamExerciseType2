@@ -69,7 +69,7 @@ public class CategoryCountResource {
     @GET
     @Produces(MediaType.APPLICATION_JSON)
     @Operation(summary = "Get information about all legal categories",
-            tags = {"cityInfo"},
+            tags = {"Category Count Endpoint"},
             responses = {
                 @ApiResponse(
                         content = @Content(mediaType = "application/json", schema = @Schema(implementation = CategoryDTO.class))),
