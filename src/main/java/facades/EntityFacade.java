@@ -8,6 +8,7 @@ package facades;
 import entities.Category;
 import entities.Request;
 import errorhandling.CategoryException;
+import java.util.List;
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
 import javax.persistence.NoResultException;
@@ -98,6 +99,17 @@ public class EntityFacade {
             em.remove(em.merge(o));
             em.getTransaction().commit();
             return o;
+        } finally {
+            em.close();
+        }
+    }
+    
+    public List<Category> getAllCategories() {
+        EntityManager em = emf.createEntityManager();
+        try {
+            TypedQuery<Category> query
+                    = em.createQuery("SELECT c FROM Category c", Category.class);
+            return query.getResultList();
         } finally {
             em.close();
         }

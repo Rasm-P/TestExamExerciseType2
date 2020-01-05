@@ -5,8 +5,8 @@
  */
 package rest;
 
+import dto.CategoryDTO;
 import entities.Category;
-import entities.User;
 import errorhandling.CategoryException;
 import facades.EntityFacade;
 import io.swagger.v3.oas.annotations.OpenAPIDefinition;
@@ -17,6 +17,8 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.servers.Server;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.ExecutionException;
 import javax.annotation.security.RolesAllowed;
 import javax.persistence.EntityManagerFactory;
@@ -41,7 +43,7 @@ import utils.EMF_Creator;
                 description = "Backend of TestExamExerciseType2"
         ),
         tags = {
-            @Tag(name = "Category Count Endpoint", description = "API used for admins to count interactions with categories")
+            @Tag(name = "Category Count Endpoint", description = "API used for interaction with categories")
         },
         servers = {
             @Server(
@@ -63,7 +65,25 @@ public class CategoryCountResource {
 
     @Context
     SecurityContext securityContext;
-
+    
+    @GET
+    @Produces(MediaType.APPLICATION_JSON)
+    @Operation(summary = "Get information about all legal categories",
+            tags = {"cityInfo"},
+            responses = {
+                @ApiResponse(
+                        content = @Content(mediaType = "application/json", schema = @Schema(implementation = CategoryDTO.class))),
+                @ApiResponse(responseCode = "200", description = "Returns all categories"),
+                @ApiResponse(responseCode = "400", description = "User token invalid or not authorized")})
+    public List<CategoryDTO> getAllCategories() {
+        List<Category> categories = cateF.getAllCategories();
+        List<CategoryDTO> dto = new ArrayList<>();
+        for(Category c : categories){
+            dto.add(new CategoryDTO(c));
+        }
+        return dto;
+    }
+    
     @GET
     @Path("/{category}")
     @RolesAllowed("admin")

@@ -5,7 +5,7 @@
  */
 package rest;
 
-import dto.ResponceDTO;
+import dto.CategoryDTO;
 import entities.Category;
 import facades.EntityFacade;
 import io.swagger.v3.oas.annotations.OpenAPIDefinition;
@@ -22,7 +22,6 @@ import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.Produces;
-import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
@@ -73,12 +72,13 @@ public class NewCategoryResource {
             tags = {"New Category"},
             responses = {
                 @ApiResponse(
-                        content = @Content(mediaType = "application/json", schema = @Schema(implementation = Category.class))),
+                        content = @Content(mediaType = "application/json", schema = @Schema(implementation = CategoryDTO.class))),
                 @ApiResponse(responseCode = "200", description = "A new legal category is created"),
                 @ApiResponse(responseCode = "400", description = "User token invalid or not authorized")})
-    public Category createCategory(Category c) {
+    public CategoryDTO createCategory(Category c) {
         Category category = cateF.addCategroy(c);
-        return category;
+        CategoryDTO dto = new CategoryDTO(category);
+        return dto;
     }
     
     @DELETE
@@ -89,11 +89,12 @@ public class NewCategoryResource {
             tags = {"New Category"},
             responses = {
                 @ApiResponse(
-                        content = @Content(mediaType = "application/json", schema = @Schema(implementation = Category.class))),
+                        content = @Content(mediaType = "application/json", schema = @Schema(implementation = CategoryDTO.class))),
                 @ApiResponse(responseCode = "200", description = "A legal category is deleted"),
                 @ApiResponse(responseCode = "400", description = "User token invalid or not authorized")})
-    public Category deleteCategory(@PathParam("id") Long id) {
+    public CategoryDTO deleteCategory(@PathParam("id") Long id) {
         Category category = cateF.removeCategroy(id);
-        return category;
+        CategoryDTO dto = new CategoryDTO(category);
+        return dto;
     }
 }
