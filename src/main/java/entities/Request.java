@@ -1,9 +1,11 @@
 package entities;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import javax.persistence.Basic;
+import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
@@ -47,7 +49,7 @@ public class Request implements Serializable {
         this.id = id;
     }
 
-    public Request() {
+    public Request() { 
         Date date = new Date();
         this.requestTimestamp = date;
     }
@@ -74,6 +76,10 @@ public class Request implements Serializable {
 
     public void setCategoryList(List<Category> categoryList) {
         this.categoryList = categoryList;
+    }
+    
+    public void addToCategoryList(Category categroy) {
+        this.categoryList.add(categroy);
     }
 
 }

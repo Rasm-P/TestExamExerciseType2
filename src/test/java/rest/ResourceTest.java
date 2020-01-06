@@ -1,8 +1,9 @@
-package scurity;
+package rest;
 
-import entities.User;
+import entities.Category;
 import entities.Role;
-
+import entities.User;
+import utils.EMF_Creator;
 import io.restassured.RestAssured;
 import static io.restassured.RestAssured.given;
 import io.restassured.http.ContentType;
@@ -18,13 +19,10 @@ import static org.hamcrest.Matchers.equalTo;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
-import rest.ApplicationConfig;
-import utils.EMF_Creator;
 
 //@Disabled
-public class LoginEndpointTest {
+public class ResourceTest {
 
     private static final int SERVER_PORT = 7777;
     private static final String SERVER_URL = "http://localhost/api";
@@ -55,29 +53,56 @@ public class LoginEndpointTest {
         httpServer.shutdownNow();
     }
 
+    User user = new User("user", "test");
+    User admin = new User("admin", "test");
+    Role userRole = new Role("user");
+    Role adminRole = new Role("admin");
+    Category Career = new Category("Career");
+    Category celebrity = new Category("celebrity");
+    Category dev = new Category("dev");
+    Category explicit = new Category("explicit");
+    Category fashion = new Category("fashion");
+    Category food = new Category("food");
+    Category history = new Category("history");
+    Category money = new Category("money");
+    Category movie = new Category("movie");
+    Category music = new Category("music");
+    Category political = new Category("political");
+    Category science = new Category("science");
+    Category sport = new Category("sport");
+    Category travel = new Category("travel");
+
     @BeforeEach
     public void setUp() {
         EntityManager em = emf.createEntityManager();
         try {
+            user.addRole(userRole);
+            admin.addRole(adminRole);
+
             em.getTransaction().begin();
             em.createQuery("delete from User").executeUpdate();
             em.createQuery("delete from Role").executeUpdate();
+            em.createQuery("delete from Category").executeUpdate();
 
-            Role userRole = new Role("user");
-            Role adminRole = new Role("admin");
-            User user = new User("user", "test");
-            user.addRole(userRole);
-            User admin = new User("admin", "test");
-            admin.addRole(adminRole);
-            User both = new User("user_admin", "test");
-            both.addRole(userRole);
-            both.addRole(adminRole);
             em.persist(userRole);
             em.persist(adminRole);
             em.persist(user);
             em.persist(admin);
-            em.persist(both);
-            System.out.println("Saved test data to database");
+
+            em.persist(Career);
+            em.persist(celebrity);
+            em.persist(dev);
+            em.persist(explicit);
+            em.persist(fashion);
+            em.persist(food);
+            em.persist(history);
+            em.persist(money);
+            em.persist(movie);
+            em.persist(music);
+            em.persist(political);
+            em.persist(science);
+            em.persist(sport);
+            em.persist(travel);
             em.getTransaction().commit();
         } finally {
             em.close();
@@ -91,6 +116,7 @@ public class LoginEndpointTest {
         securityToken = given()
                 .contentType("application/json")
                 .body(json)
+                //.when().post("/api/login")
                 .when().post("/login")
                 .then()
                 .extract().path("token");
@@ -102,63 +128,70 @@ public class LoginEndpointTest {
     }
 
     @Test
-    public void testLoginAdmin() throws Exception {
+    public void testCategoryCount() {
+        login("admin", "test");
         given()
                 .contentType("application/json")
-                .body("{\"username\":\"admin\", \"password\":\"test\"}")
+                .accept(ContentType.JSON)
+                .header("x-access-token", securityToken)
                 .when()
-                .post("/login")
-                .then()
+                .get("/categoryCount/sport").then()
                 .statusCode(200)
-                .body("username", equalTo("admin"));
+                .body("count", equalTo(0));
     }
 
     @Test
-    public void testLoginUser() throws Exception {
+    public void testJokeByCategoryNotOverFour() {
         given()
                 .contentType("application/json")
-                .body("{\"username\":\"user\", \"password\":\"test\"}")
+                .accept(ContentType.JSON)
+                .header("x-access-token", securityToken)
                 .when()
-                .post("/login")
-                .then()
-                .statusCode(200)
-                .body("username", equalTo("user"));
+                .get("/jokeByCategory/1,2,3,4,5").then()
+                .statusCode(500)
+                .body("message", equalTo("For this request, a maximum of 4 categories is allowed!"));
     }
 
     @Test
-    public void testNoLogin1() throws Exception {
+    public void testJokeByCategoryV2NotOverTwelve() {
+        login("user", "test");
         given()
                 .contentType("application/json")
-                .body("{\"username\":\"user123\", \"password\":\"te123123st\"}")
+                .accept(ContentType.JSON)
+                .header("x-access-token", securityToken)
                 .when()
-                .post("/login")
-                .then()
-                .statusCode(403)
-                .body("message", equalTo("Invalid user name or password"));
+                .get("/jokeByCategoryV2/1,2,3,4,5,6,7,8,9,10,11,12,13").then()
+                .statusCode(500)
+                .body("message", equalTo("For this request, a maximum of 12 categories is allowed!"));
     }
 
     @Test
-    public void testNoLogin2() throws Exception {
+    public void testAddNewCategory() {
+        login("admin", "test");
         given()
                 .contentType("application/json")
-                .body("{\"username\":\"user\", \"password\":\"te123123st\"}")
+                .accept(ContentType.JSON)
+                .header("x-access-token", securityToken)
                 .when()
-                .post("/login")
+                .body("{\"category\": \"string\",\n"
+                        + "  \"requestList\": []}")
+                .when()
+                .post("/newCategory")
                 .then()
-                .statusCode(403)
-                .body("message", equalTo("Invalid user name or password"));
+                .statusCode(200);
     }
 
     @Test
-    public void testNoLogin3() throws Exception {
+    public void testDeleteNewCategory() {
+        login("admin", "test");
         given()
                 .contentType("application/json")
-                .body("{\"username\":\"user123\", \"password\":\"test\"}")
+                .accept(ContentType.JSON)
+                .header("x-access-token", securityToken)
                 .when()
-                .post("/login")
+                .delete("/newCategory/" + travel.getId())
                 .then()
-                .statusCode(403)
-                .body("message", equalTo("Invalid user name or password"));
+                .statusCode(200);
     }
 
 }
