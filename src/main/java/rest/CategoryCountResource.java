@@ -97,7 +97,7 @@ public class CategoryCountResource {
                 @ApiResponse(responseCode = "400", description = "User token invalid or not authorized")})
     public String categoryCount(@PathParam("category") String jsonString) throws InterruptedException, ExecutionException, CategoryException {
         Category category = cateF.findLegalCategroy(jsonString);
-        return "{\"count\":"+category.getRequestList().size()+"}";
+        return "{\"id\":"+category.getId()+",\"count\":"+category.getRequestList().size()+"}";
     }
 
 }
