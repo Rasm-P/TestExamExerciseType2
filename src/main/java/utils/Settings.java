@@ -35,7 +35,7 @@ public class Settings {
     /**
      * Utility method that builds the DEV-connection string using the property values: db.server , db.port and db.testdatabase
      * @return 
-     *  a connection string formatted like this: "jdbc:mysql://localhost:3307/cba"
+     *  a connection string formatted like this: "jdbc:mysql://localhost:3307/TestExamExerciseType2"
      */
     public static String getDEV_DBConnection(){
         intializeProperties();
@@ -45,7 +45,7 @@ public class Settings {
     /**
      * Utility method that builds the TEST-connection string using the property values: db.server , db.port and db.database
      * @return 
-     *  a connection string formatted like this: "jdbc:mysql://localhost:3307/cba_test"
+     *  a connection string formatted like this: "jdbc:mysql://localhost:3307/TestExamExerciseType2_test"
      */
     public static String getTEST_DBConnection(){
         intializeProperties();
