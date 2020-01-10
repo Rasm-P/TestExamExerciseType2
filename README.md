@@ -1,4 +1,6 @@
-[![Build Status](https://travis-ci.org/Rasm-P/testPipeline.svg?branch=master)](https://travis-ci.org/Rasm-P/testPipeline)
+[![Build Status](https://travis-ci.org/Rasm-P/TestExamExerciseType2.svg?branch=master)](https://travis-ci.org/Rasm-P/TestExamExerciseType2)
+
+Deployment: http://testexamexercisetype2front.surge.sh/#/
 
 *This project is meant as start code for future projects and exercises.*
 
