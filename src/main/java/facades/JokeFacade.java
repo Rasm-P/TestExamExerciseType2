@@ -26,6 +26,8 @@ import dto.ResponceDTO;
 import entities.Category;
 import entities.Request;
 import errorhandling.CategoryException;
+import java.util.Queue;
+import java.util.concurrent.ArrayBlockingQueue;
 import javax.persistence.NoResultException;
 
 /**
@@ -55,7 +57,7 @@ public class JokeFacade {
 
         final List<Joke> jokes = new ArrayList();
         ExecutorService executor = Executors.newFixedThreadPool(categoryArray.length);
-        List<Future<String>> list = new ArrayList();
+        Queue<Future<Joke>> list = new ArrayBlockingQueue(categoryArray.length);
         EntityFacade cateF = EntityFacade.getFacade(emf);
         try {
             for (int i = 0; i < categoryArray.length; i++) {
@@ -66,23 +68,28 @@ public class JokeFacade {
                 cateF.addRequest(r);
                 cateF.categoryUpdate(travel);
 
-                Future<String> future = executor.submit(new Callable<String>() {
+                Future<Joke> future = executor.submit(new Callable<Joke>() {
                     @Override
-                    public String call() throws Exception {
+                    public Joke call() throws Exception {
                         String s = returnJokeGivenCategory(category);
 
                         JsonObject jsonObject = new JsonParser().parse(s).getAsJsonObject();
                         Joke joke = new Joke(category, jsonObject.get("value").getAsString());
-                        jokes.add(joke);
-
-                        return s;
+                        return joke;
                     }
                 });
                 list.add(future);
             }
-            for (Future fut : list) {
-                System.out.println(fut.get());
+
+            while (!list.isEmpty()) {
+                Future<Joke> j = list.poll();
+                if (j.isDone()) {
+                    jokes.add(j.get());
+                } else {
+                    list.add(j);
+                }
             }
+
         } catch (NoResultException | CategoryException | InterruptedException | ExecutionException ex) {
             executor.shutdown();
             throw new CategoryException("One of the categories were not vaild!");
