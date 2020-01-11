@@ -1,5 +1,7 @@
 [![Build Status](https://travis-ci.org/Rasm-P/TestExamExerciseType2.svg?branch=master)](https://travis-ci.org/Rasm-P/TestExamExerciseType2)
 
+Deployment: https://testexamexercisetype2front.surge.sh
+
 *This project is meant as start code for future projects and exercises.*
 
 *Projects which are expected to use this start-code are projects that require all, or most of the following technologies:*
